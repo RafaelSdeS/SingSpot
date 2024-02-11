@@ -1,7 +1,13 @@
+import AudioUploader from '@/components/AudioUploader'
+import Recorder from '@/components/Recorder'
+
 export default function Home() {
   return (
-    <div>
-      <h1>This is your home page with dashboard</h1>
-    </div>
+    <main className="h-[90vh]">
+      <div className="flex flex-row justify-around w-full">
+        <AudioUploader />
+        <Recorder />
+      </div>
+    </main>
   )
 }

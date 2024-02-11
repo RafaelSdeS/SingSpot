@@ -1,7 +1,19 @@
+'use client'
+
 export default function Register() {
+  const handleClick = () => {
+    console.log('Register')
+  }
+
   return (
     <div>
-      <h1>Register</h1>
+      <button
+        onClick={() => {
+          handleClick()
+        }}
+      >
+        Console log
+      </button>
     </div>
   )
 }
