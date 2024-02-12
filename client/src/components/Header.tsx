@@ -30,6 +30,11 @@ const Header = () => {
                 </Avatar>
               </Link>
             </li>
+            <li>
+              <Link className="text-white" href={'/login'}>
+                Logout
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

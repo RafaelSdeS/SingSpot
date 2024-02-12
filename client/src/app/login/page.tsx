@@ -1,7 +1,13 @@
-export default function Login() {
-  return (
-    <div>
-      <h1>Login</h1>
-    </div>
-  )
+'use client'
+
+import CustomForm from '@/components/CustomForm'
+
+const Login = () => {
+  const login = () => {
+    console.log('login')
+  }
+
+  return <CustomForm formName="Login" formFunction={login} />
 }
+
+export default Login

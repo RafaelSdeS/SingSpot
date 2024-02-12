@@ -1,19 +1,13 @@
 'use client'
 
-export default function Register() {
-  const handleClick = () => {
+import CustomForm from '@/components/CustomForm'
+
+const Register = () => {
+  const register = () => {
     console.log('Register')
   }
 
-  return (
-    <div>
-      <button
-        onClick={() => {
-          handleClick()
-        }}
-      >
-        Console log
-      </button>
-    </div>
-  )
+  return <CustomForm formName="Register" formFunction={register} />
 }
+
+export default Register
