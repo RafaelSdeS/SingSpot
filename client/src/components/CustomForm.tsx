@@ -20,16 +20,33 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormSchemaType, formSchema } from '@/schemas/formShcema'
+import { auth } from '@/firebase/config'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 
 interface CustomFormProps {
-  formFunction: () => void
+  formFunction: SubmitHandler<{ email: string; password: string }>
   formName: string
 }
 
 const CustomForm: React.FC<CustomFormProps> = ({ formFunction, formName }) => {
+  const signInWithGooglePopup = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      const credential = GoogleAuthProvider.credentialFromResult(result)
+      console.log(result.user)
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message)
+      } else {
+        console.log('An unexpected error occurred', error)
+      }
+    }
+  }
+
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,6 +116,7 @@ const CustomForm: React.FC<CustomFormProps> = ({ formFunction, formName }) => {
               </div>
             </form>
           </Form>
+          <Button onClick={signInWithGooglePopup}>Enter with Google</Button>
         </CardContent>
       </Card>
     </div>
