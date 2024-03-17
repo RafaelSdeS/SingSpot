@@ -1,20 +1,19 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useButtonClickContext } from '@/contexts/buttonClickContext'
+import { useState, useRef } from 'react'
+import { Button } from './ui/button'
 
 const Recorder = () => {
   const [permission, setPermission] = useState(false)
-  const [recordComplete, setRcdComplete] = useState(false)
   const [stream, setStream] = useState<MediaStream>()
-  const [recordingStatus, setRecordingStatus] = useState('inactive')
-  const mrRef = useRef<MediaRecorder | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const [audio, setAudio] = useState('')
+  const recordingRef = useRef<HTMLAudioElement | null>(null)
 
-  const dataType = 'video/webm'
+  const { handlePlayAudio, startRecording, stopRecording, audio, mrRef } =
+    useButtonClickContext()
 
   const getMicrophonePermission = async () => {
+    console.log(mrRef)
     if ('MediaRecorder' in window) {
       try {
         const streamData = await navigator.mediaDevices.getUserMedia({
@@ -31,97 +30,61 @@ const Recorder = () => {
     }
   }
 
-  const startRecording = async () => {
-    URL.revokeObjectURL(audio)
-    mrRef.current = null
-    audioChunksRef.current = []
-
-    setRecordingStatus('recording')
-    const mediaRecorder = new MediaRecorder(stream!, {
-      mimeType: dataType,
-      audioBitsPerSecond: 16 * 44100,
-    })
-    mrRef.current = mediaRecorder
-
-    let localAudioChunks = [] //[Blob];
-    mediaRecorder.start()
-    mediaRecorder.ondataavailable = event => {
-      if (typeof event.data === 'undefined') return
-      if (event.data.size === 0) return
-      localAudioChunks.push(event.data)
-      audioChunksRef.current.push(event.data)
-    }
+  const startRecordingAndMusic = () => {
+    startRecording()
+    handlePlayAudio()
   }
 
-  const stopRecording = () => {
-    setRecordingStatus('inactive')
-    if (!mrRef.current) return
-    mrRef.current?.stop()
-    mrRef.current.onstop = async () => {
-      console.log('Here dataType = ', dataType)
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: dataType,
-      })
-      const audioUrl = URL.createObjectURL(audioBlob)
-      setAudio(audioUrl)
-      setRcdComplete(true)
-    }
-  }
+  // Related to hearing the recording
 
   const handlePlay = () => {
-    if (audioRef.current) {
-      console.log('currentTime-handlePlay(1) =', audioRef.current.currentTime)
-      audioRef.current.play()
-      console.log('currentTime-handlePlay(2) =', audioRef.current.currentTime)
+    console.log(recordingRef)
+    if (recordingRef.current) {
+      recordingRef.current.play()
     }
+    console.log(mrRef)
   }
 
   const handleEnd = () => {
-    console.log('Passage +', audioRef.current ? 'OK' : 'à vide')
-    if (audioRef.current) {
-      console.log('currentTime(1) =', audioRef.current.currentTime)
-      audioRef.current.currentTime = 0.0
-      console.log('currentTime(2) =', audioRef.current.currentTime)
+    console.log('Passage +', recordingRef.current ? 'OK' : 'à vide')
+    if (recordingRef.current) {
+      recordingRef.current.currentTime = 0.0
     }
-    console.log('Passage +', audioRef.current ? 'OK' : 'à vide')
+    console.log('Passage +', recordingRef.current ? 'OK' : 'à vide')
   }
 
   return (
     <div>
       <main className="flex flex-col gap-4">
         <div className="flex gap-2 justify-around">
-          <button
+          <Button
             className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
             onClick={getMicrophonePermission}
-            type="button"
           >
             Get Microphone
-          </button>
-          <button
+          </Button>
+          <Button
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             onClick={startRecording}
-            type="button"
           >
             Start Recording
-          </button>
-          <button
+          </Button>
+          <Button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
             onClick={stopRecording}
-            type="button"
           >
             Stop Recording
-          </button>
-          <button
+          </Button>
+          <Button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={stopRecording}
-            type="button"
+            onClick={startRecordingAndMusic}
           >
             Start Recording and Song
-          </button>
+          </Button>
         </div>
         <audio
           src={audio}
-          ref={audioRef}
+          ref={recordingRef}
           id="audio-player"
           onPlay={handlePlay}
           onEnded={handleEnd}

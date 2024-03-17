@@ -1,41 +1,39 @@
 'use client'
 
-// Import necessary modules
 import Link from 'next/link'
 import React from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import UserNav from './UserNav'
+import { useAuth } from '@/contexts/authContext'
+import { Button } from './ui/button'
 
 const Header = () => {
+  const { user } = useAuth()
+
   return (
-    <header className="bg-gray-800 py-4 mb-8">
+    <header className="bg-gray-800 py-4 mb-8 border-b h-[10vh]">
       <div className="container mx-auto px-4">
         <nav className="flex justify-between">
-          <Link className="text-white" href={'/home'}>
-            SingSpot
+          <Link href="/">
+            <h1 className="font-bold text-3xl text-secondary">SingSpot</h1>
           </Link>
-          <ul className="flex gap-3">
-            <li>
-              <Link className="text-white" href={'/home'}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link className="text-white" href={'/user'}>
-                <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </Link>
-            </li>
-            <li>
-              <Link className="text-white" href={'/login'}>
-                Logout
-              </Link>
-            </li>
-          </ul>
+          <div className="flex gap-3">
+            {user ? (
+              <UserNav
+                name={user?.displayName as string}
+                email={user?.email as string}
+                image={user?.photoURL as string}
+              />
+            ) : (
+              <>
+                <Button asChild className="bg-transparent">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild className="bg-transparent">
+                  <Link href="register">Register</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </nav>
       </div>
     </header>

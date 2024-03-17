@@ -1,27 +1,19 @@
 'use client'
 
-import React, { useRef, ChangeEvent, useState, useEffect } from 'react'
-import { Input } from './ui/input'
+import React, { ChangeEvent, useState, useEffect } from 'react'
+import { useButtonClickContext } from '@/contexts/buttonClickContext'
+import { Button } from './ui/button'
+import { Inbox } from 'lucide-react'
+import { useDropzone } from 'react-dropzone'
+import { useAuth } from '@/contexts/authContext'
 
 interface AudioPlayerProps {}
 
 const AudioUploader: React.FC<AudioPlayerProps> = () => {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file && audioRef.current) {
-      const reader = new FileReader()
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        if (typeof e.target?.result === 'string') {
-          audioRef.current!.src = e.target.result
-        }
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+  const { handlePlayAudio, audioFileRef } = useButtonClickContext()
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -29,64 +21,90 @@ const AudioUploader: React.FC<AudioPlayerProps> = () => {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
   }
 
-  const handlePlay = () => {
-    if (audioRef.current) {
-      audioRef.current?.play()
-    }
-  }
-
   const handleStop = () => {
-    if (audioRef.current) {
-      audioRef.current!.pause()
+    if (audioFileRef.current) {
+      audioFileRef.current!.pause()
     }
   }
 
   const handleSeekChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = parseFloat(event.target.value)
+    if (audioFileRef.current) {
+      audioFileRef.current.currentTime = parseFloat(event.target.value)
     }
   }
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.addEventListener('loadedmetadata', () => {
-        setDuration(audioRef.current!.duration)
+    if (audioFileRef.current) {
+      audioFileRef.current.addEventListener('loadedmetadata', () => {
+        setDuration(audioFileRef.current!.duration)
       })
 
-      audioRef.current.addEventListener('timeupdate', () => {
-        setCurrentTime(audioRef.current!.currentTime)
+      audioFileRef.current.addEventListener('timeupdate', () => {
+        setCurrentTime(audioFileRef.current!.currentTime)
       })
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener('loadedmetadata', () => {})
-        audioRef.current.removeEventListener('timeupdate', () => {})
+      if (audioFileRef.current) {
+        audioFileRef.current.removeEventListener('loadedmetadata', () => {})
+        audioFileRef.current.removeEventListener('timeupdate', () => {})
       }
     }
-  }, [])
+  }, [audioFileRef])
+
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      'audio/mpeg': ['.mp3'],
+      'audio/wav': ['.wav'],
+      'audio/webm': ['.webm'],
+      'audio/flac': ['.flac'],
+      'audio/x-m4a': ['.m4a'],
+      'audio/ogg': ['.ogg'],
+      'audio/aac': ['.aac'],
+      'audio/3gpp': ['.3gp'],
+      'audio/3gpp2': ['.3g2'],
+    },
+    maxFiles: 1,
+    onDrop: async acceptedFiles => {
+      console.log(acceptedFiles[0].name)
+      const file = acceptedFiles[0]
+      if (file && audioFileRef.current) {
+        const reader = new FileReader()
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          if (typeof e.target?.result === 'string') {
+            audioFileRef.current!.src = e.target.result
+          }
+        }
+        reader.readAsDataURL(file)
+      }
+    },
+  })
 
   return (
     <div className="bg-gray-800 p-4 rounded-md">
-      <Input
-        type="file"
-        accept="audio/*"
-        onChange={handleFileChange}
-        className="h-[20vh] mb-4"
-      />
-      <button
-        onClick={handlePlay}
+      <div
+        {...getRootProps({
+          className:
+            'border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex justify-center items-center flex-col',
+        })}
+      >
+        <input {...getInputProps()} />
+        <Inbox className="w-10 h-10 text-blue-500" />
+        <p className="mt-2 text-sm text-slate-400">Drop music here</p>
+      </div>
+      <Button
+        onClick={handlePlayAudio}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
       >
         Play
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={handleStop}
         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2"
       >
         Stop
-      </button>
-      <audio ref={audioRef} className="hidden"></audio>
+      </Button>
+      <audio ref={audioFileRef} className="hidden"></audio>
       <div className="flex justify-between items-center mb-4">
         <span className="text-white">{formatTime(currentTime)}</span>
         <input

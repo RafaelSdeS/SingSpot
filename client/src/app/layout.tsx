@@ -4,6 +4,8 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { cn } from '@/lib/utils'
+import { ButtonClickProvider } from '@/contexts/buttonClickContext'
+import { AuthProvider } from '@/contexts/authContext'
 
 export const fontSans = FontSans({
   subsets: ['latin'],
@@ -28,9 +30,13 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <Header />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <ButtonClickProvider>
+            <Header />
+            {children}
+            <Footer />
+          </ButtonClickProvider>
+        </AuthProvider>
       </body>
     </html>
   )
